@@ -5,7 +5,10 @@ import time
 
 # cargar los datos del archivo Excel en un DataFrame
 df = pd.read_excel('ficha_final_cliente.xlsx', sheet_name='hoja1')
-
+first = True
+contador = -1
+nombres_columnas = df.columns
+lista_nombres_columnas = list(df.columns)
 
 def leer_datos():
     # obtener los datos del DataFrame
@@ -30,18 +33,13 @@ def enviar_datos(chat_id, nuevos_datos, df):
     
     print('DataFrame después de guardar nuevos datos:')
     print(df)
-    
-    # leer los datos del DataFrame
-    
-    # enviar los datos al usuario
-    bot.sendMessage(chat_id, 'se registraron los datos en el excel!')
-    
+        
 def agregar_datos(df, nuevos_datos):
     # crear un nuevo DataFrame con los nuevos datos
-    nuevos_df = pd.DataFrame(nuevos_datos, columns=df.columns)
+    #nuevos_df = pd.DataFrame(nuevos_datos, columns=df.columns)
     
     # concatenar el nuevo DataFrame con el original
-    df = pd.concat([df, nuevos_df], ignore_index=True)
+    df = pd.concat([df, nuevos_datos], ignore_index=True)
     
     # devolver el DataFrame actualizado
     return df
@@ -66,12 +64,30 @@ def handle_message(msg):
     chat_id = msg['chat']['id']
     
     # verificar si el usuario envió el comando para agregar nuevos datos
-    if msg['text'].startswith('/agregar'):
-        # obtener los nuevos datos como una lista de listas
-        nuevos_datos = [msg['text'][9:].split()]
-        
-        # enviar los nuevos datos al usuario
-        enviar_datos(chat_id, nuevos_datos, df)
+    command = msg['text']
+
+    global contador
+
+    print (df)
+
+    if command == '/agregar':
+        bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD/MM/AA')
+    elif contador == -1:
+        bot.sendMessage(chat_id, 'necesita poner /agregar antes de poder hacer algo')
+        return
+    elif contador == 0: 
+        new_row = pd.DataFrame({'Fecha': [command], 'Nombre cliente': [0], 'Modelo PBX': [0],'S/N': [command], 'Falla acusada': [0], 'Diagnostico': [0],'Resolucion': [0], 'PV': [0] })
+        enviar_datos(chat_id,new_row,df)
+        bot.sendMessage(chat_id, 'agregue {}'.format(lista_nombres_columnas[contador+1]))
+    elif contador > 0:
+        df.iloc[-1,contador]=command
+        guardar_datos(df, 'ficha_final_cliente.xlsx')
+        if contador < 7:
+            bot.sendMessage(chat_id, 'agregue {}'.format(lista_nombres_columnas[contador+1]))
+    contador +=1
+    if contador == 8:
+        bot.sendMessage(chat_id, 'todos los datos han sido agregados')
+        contador = -1
 
 # agregar un manejador de eventos para el bot
 bot.message_loop(handle_message)
