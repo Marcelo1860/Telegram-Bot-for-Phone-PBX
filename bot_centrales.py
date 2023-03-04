@@ -2,6 +2,7 @@ import telepot
 import pandas as pd
 import os
 import time
+from PIL import Image, ImageDraw, ImageFont
 
 # cargar los datos del archivo Excel en un DataFrame
 df = pd.read_excel('ficha_final_cliente.xlsx', sheet_name='hoja1')
@@ -9,6 +10,8 @@ first = True
 contador = -1
 nombres_columnas = df.columns
 lista_nombres_columnas = list(df.columns)
+# Definir la fuente para el texto
+font = ImageFont.truetype('arial.ttf', size=10)
 
 def leer_datos():
     # obtener los datos del DataFrame
@@ -49,6 +52,25 @@ def guardar_datos(df, archivo):
     writer = pd.ExcelWriter(archivo, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='hoja1', index=False)
     writer.save()
+
+# Definir la función que crea la imagen con los datos
+def crear_imagen(fila):
+    # Crear una imagen en blanco
+    imagen = Image.new('RGB', (400, 400), color='white')
+    
+    # Crear un objeto Draw para dibujar en la imagen
+    draw = ImageDraw.Draw(imagen)
+    
+    # Escribir los datos en la imagen
+    mensaje = '\n'.join([str(dato) for dato in fila])
+    draw.text((10, 10), mensaje, font=font, fill='black')
+    
+    # Guardar la imagen en un archivo temporal
+    imagen_path = 'temp.jpg'
+    imagen.save(imagen_path)
+    
+    # Devolver el path de la imagen
+    return imagen_path
     
 
 # obtener el token del bot de Telegram
@@ -72,6 +94,12 @@ def handle_message(msg):
 
     if command == '/agregar':
         bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD/MM/AA')
+    elif command == '/comprobante':
+        fila = df.iloc[-1].tolist()
+        imagen_path = crear_imagen(fila)
+        with open(imagen_path, 'rb') as imagen:
+            bot.sendPhoto(chat_id, imagen)
+        contador = -2
     elif contador == -1:
         bot.sendMessage(chat_id, 'necesita poner /agregar antes de poder hacer algo')
         return
@@ -87,7 +115,10 @@ def handle_message(msg):
     contador +=1
     if contador == 8:
         bot.sendMessage(chat_id, 'todos los datos han sido agregados')
+        bot.sendMessage(chat_id, 'para obtener comprobante mande /comprobante')
         contador = -1
+
+
 
 # agregar un manejador de eventos para el bot
 bot.message_loop(handle_message)
