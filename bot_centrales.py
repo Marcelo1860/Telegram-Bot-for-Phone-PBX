@@ -10,8 +10,6 @@ first = True
 contador = -1
 nombres_columnas = df.columns
 lista_nombres_columnas = list(df.columns)
-# Definir la fuente para el texto
-font = ImageFont.truetype('arial.ttf', size=10)
 
 def leer_datos():
     # obtener los datos del DataFrame
@@ -54,19 +52,26 @@ def guardar_datos(df, archivo):
     writer.save()
 
 # Definir la función que crea la imagen con los datos
-def crear_imagen(fila):
+def crear_imagen(df):
     # Crear una imagen en blanco
-    imagen = Image.new('RGB', (400, 400), color='white')
+    imagen = Image.new('RGB', (1000, 300), color='white')
     
     # Crear un objeto Draw para dibujar en la imagen
     draw = ImageDraw.Draw(imagen)
     
-    # Escribir los datos en la imagen
-    mensaje = '\n'.join([str(dato) for dato in fila])
-    draw.text((10, 10), mensaje, font=font, fill='black')
+    font_column = ImageFont.truetype('arial.ttf', 16)
+    font_value = ImageFont.truetype('arial.ttf', 16)
+
+    # Dibujar los textos en la imagen
+    x_column, x_value = 50, 200
+    y_start = 50
+    y_step = 30
+    for i, column in enumerate(df.columns):
+        draw.text((x_column, y_start + y_step * i), column, fill='blue', font=font_column)
+        draw.text((x_value, y_start + y_step * i), str(df.iloc[-1][column]), fill='black', font=font_value)
     
     # Guardar la imagen en un archivo temporal
-    imagen_path = 'temp.jpg'
+    imagen_path = 'temp.pdf'
     imagen.save(imagen_path)
     
     # Devolver el path de la imagen
@@ -95,8 +100,8 @@ def handle_message(msg):
     if command == '/agregar':
         bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD/MM/AA')
     elif command == '/comprobante':
-        fila = df.iloc[-1].tolist()
-        imagen_path = crear_imagen(fila)
+        #fila = df.iloc[-1].tolist()
+        imagen_path = crear_imagen(df)
         with open(imagen_path, 'rb') as imagen:
             bot.sendPhoto(chat_id, imagen)
         contador = -2
