@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import time
 from PIL import Image, ImageDraw, ImageFont
+import textwrap
 
 # cargar los datos del archivo Excel en un DataFrame
 df = pd.read_excel('ficha_final_cliente.xlsx', sheet_name='hoja1')
@@ -54,22 +55,37 @@ def guardar_datos(df, archivo):
 # Definir la función que crea la imagen con los datos
 def crear_imagen(df):
     # Crear una imagen en blanco
-    imagen = Image.new('RGB', (1000, 300), color='white')
+    imagen = Image.new('RGB', (800, 1600), color='white')
     
     # Crear un objeto Draw para dibujar en la imagen
     draw = ImageDraw.Draw(imagen)
     
     font_column = ImageFont.truetype('arial.ttf', 16)
-    font_value = ImageFont.truetype('arial.ttf', 16)
+    font_value = ImageFont.truetype('arial.ttf', 14)
 
     # Dibujar los textos en la imagen
     x_column, x_value = 50, 200
     y_start = 50
     y_step = 30
+    prev_lines = 0
     for i, column in enumerate(df.columns):
-        draw.text((x_column, y_start + y_step * i), column, fill='blue', font=font_column)
-        draw.text((x_value, y_start + y_step * i), str(df.iloc[-1][column]), fill='black', font=font_value)
-    
+        # Dibujar el nombre de la columna
+        draw.text((x_column, y_start + y_step * 2 * i + prev_lines*y_step), column, fill='blue', font=font_column)
+        
+        # Obtener el valor de la última fila de la columna
+        value = str(df.iloc[-1][column])
+        
+        # Dividir el valor en varias líneas si es necesario
+        lines = textwrap.wrap(value, width=90)
+        num_lines = len(lines)
+        
+        # Dibujar cada línea de texto
+        for j, line in enumerate(lines):
+            draw.text((x_column, y_start + y_step * (2*i+1) +(prev_lines+j)*y_step), line, fill='black', font=font_value)
+
+        # Actualizar el número de líneas previas
+        prev_lines = prev_lines +  num_lines -1    
+
     # Guardar la imagen en un archivo temporal
     imagen_path = 'temp.pdf'
     imagen.save(imagen_path)
