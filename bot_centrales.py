@@ -88,6 +88,7 @@ bot = telepot.Bot(token)
 # definir una función para manejar los mensajes recibidos por el bot
 def handle_message(msg):
     # obtener el chat_id del usuario
+
     chat_id = msg['chat']['id']
     
     # verificar si el usuario envió el comando para agregar nuevos datos
@@ -105,6 +106,10 @@ def handle_message(msg):
         with open(imagen_path, 'rb') as imagen:
             bot.sendPhoto(chat_id, imagen)
         contador = -2
+    elif command == '/limpiar':
+        df.drop(df.index, inplace=True)
+        guardar_datos(df, 'ficha_final_cliente.xlsx')
+        contador = -2
     elif contador == -1:
         bot.sendMessage(chat_id, 'necesita poner /agregar antes de poder hacer algo')
         return
@@ -117,6 +122,7 @@ def handle_message(msg):
         guardar_datos(df, 'ficha_final_cliente.xlsx')
         if contador < 7:
             bot.sendMessage(chat_id, 'agregue {}'.format(lista_nombres_columnas[contador+1]))
+
     contador +=1
     if contador == 8:
         bot.sendMessage(chat_id, 'todos los datos han sido agregados')
