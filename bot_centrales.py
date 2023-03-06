@@ -93,6 +93,7 @@ def crear_imagen(df):
     # Devolver el path de la imagen
     return imagen_path
     
+    
 
 # obtener el token del bot de Telegram
 token = '6188339712:AAF04J6tDRs3lOAtDVYb7EUig6Iz-CiK_40'
@@ -116,11 +117,18 @@ def handle_message(msg):
 
     if command == '/agregar':
         bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD/MM/AA')
-    elif command == '/comprobante':
+    elif command == '/comprobante_foto':
         #fila = df.iloc[-1].tolist()
         imagen_path = crear_imagen(df)
         with open(imagen_path, 'rb') as imagen:
             bot.sendPhoto(chat_id, imagen)
+        contador = -2
+    elif command == '/comprobante_pdf':
+        #fila = df.iloc[-1].tolist()
+        imagen_path = crear_imagen(df)
+        # enviar el archivo pdf al usuario
+        with open('temp.pdf', 'rb') as f:
+            bot.sendDocument(chat_id, f)
         contador = -2
     elif command == '/limpiar':
         df.drop(df.index, inplace=True)
@@ -142,7 +150,7 @@ def handle_message(msg):
     contador +=1
     if contador == 8:
         bot.sendMessage(chat_id, 'todos los datos han sido agregados')
-        bot.sendMessage(chat_id, 'para obtener comprobante mande /comprobante')
+        bot.sendMessage(chat_id, 'para obtener comprobante mande /comprobante_foto o /comprobante_pdf')
         contador = -1
 
 
