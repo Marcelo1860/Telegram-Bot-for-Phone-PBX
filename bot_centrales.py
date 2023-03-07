@@ -130,6 +130,10 @@ def handle_message(msg):
         with open('temp.pdf', 'rb') as f:
             bot.sendDocument(chat_id, f)
         contador = -2
+    elif command == '/excel':
+        with open('ficha_final_cliente.xlsx', 'rb') as f:
+            bot.sendDocument(chat_id, document=f)
+        contador = -2
     elif command == '/limpiar':
         df.drop(df.index, inplace=True)
         guardar_datos(df, 'ficha_final_cliente.xlsx')
