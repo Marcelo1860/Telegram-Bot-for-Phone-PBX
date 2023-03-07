@@ -60,14 +60,17 @@ def crear_imagen(df):
     # Crear un objeto Draw para dibujar en la imagen
     draw = ImageDraw.Draw(imagen)
     
+    font_descripcion = ImageFont.truetype('arial.ttf', 20)
     font_column = ImageFont.truetype('arial.ttf', 16)
     font_value = ImageFont.truetype('arial.ttf', 14)
 
     # Dibujar los textos en la imagen
     x_column, x_value = 50, 200
-    y_start = 50
+    y_start = 100
     y_step = 30
     prev_lines = 0
+
+    draw.text((x_column, y_start-50), 'Ing. Simonella - Comprobante tecnico', fill='green', font=font_descripcion)
     for i, column in enumerate(df.columns):
         # Dibujar el nombre de la columna
         draw.text((x_column, y_start + y_step * 2 * i + prev_lines*y_step), column, fill='blue', font=font_column)
@@ -87,7 +90,8 @@ def crear_imagen(df):
         prev_lines = prev_lines +  num_lines -1    
 
     # Guardar la imagen en un archivo temporal
-    imagen_path = 'temp.pdf'
+    imagen_path = '{}_{}_{}.pdf'.format(df.iloc[-1,0],df.iloc[-1,1],df.iloc[-1,2])
+    #imagen_path = 'tata.pdf'
     imagen.save(imagen_path)
     
     # Devolver el path de la imagen
@@ -116,7 +120,7 @@ def handle_message(msg):
     print (df)
 
     if command == '/agregar':
-        bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD/MM/AA')
+        bot.sendMessage(chat_id, 'agregue la fecha del trabajo en formato DD-MM-AA')
     elif command == '/comprobante_foto':
         #fila = df.iloc[-1].tolist()
         imagen_path = crear_imagen(df)
@@ -127,7 +131,7 @@ def handle_message(msg):
         #fila = df.iloc[-1].tolist()
         imagen_path = crear_imagen(df)
         # enviar el archivo pdf al usuario
-        with open('temp.pdf', 'rb') as f:
+        with open('{}_{}_{}.pdf'.format(df.iloc[-1,0],df.iloc[-1,1],df.iloc[-1,2]), 'rb') as f:
             bot.sendDocument(chat_id, f)
         contador = -2
     elif command == '/excel':
